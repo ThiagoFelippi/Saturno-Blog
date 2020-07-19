@@ -6,6 +6,7 @@ import http from 'http'
 
 // Resolvers
 import { UserResolver } from './graphql/User/UserResolver'
+import { PostResolver } from './graphql/Post/PostResolver'
 
 (async () => {
   const port = 4000
@@ -14,7 +15,8 @@ import { UserResolver } from './graphql/User/UserResolver'
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
       resolvers: [
-        UserResolver
+        UserResolver,
+        PostResolver
       ]
     })
   })
