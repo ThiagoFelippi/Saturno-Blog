@@ -5,7 +5,7 @@ import { createConnection } from 'typeorm'
 import http from 'http'
 
 // Resolvers
-import { UserResolver } from './graphql/UserResolver'
+import { UserResolver } from './graphql/User/UserResolver'
 
 (async () => {
   const port = 4000

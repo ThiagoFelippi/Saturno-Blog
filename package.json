@@ -31,10 +31,12 @@
     "husky": "^4.2.5",
     "mysql": "^2.18.1",
     "type-graphql": "^1.0.0-rc.3",
-    "typeorm": "^0.2.25"
+    "typeorm": "^0.2.25",
+    "yup": "^0.29.1"
   },
   "devDependencies": {
     "@types/express": "^4.17.7",
+    "@types/yup": "^0.29.3",
     "ts-node": "^8.10.2",
     "ts-node-dev": "^1.0.0-pre.52",
     "typescript": "^3.9.7"
