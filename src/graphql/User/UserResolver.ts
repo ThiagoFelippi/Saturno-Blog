@@ -1,4 +1,5 @@
-import { Resolver, Query, Mutation, Arg, InputType, Field, Subscription, PubSub, PubSubEngine, Root, ObjectType, Int } from "type-graphql";
+import { Resolver, Query, Mutation, Arg, InputType, Field, Int, ObjectType } from "type-graphql";
+import bcrypt from 'bcryptjs'
 
 // Entitys
 import { User } from '../../entity/User';
@@ -19,9 +20,21 @@ class UserInput{
   @Field()
   password : string
 
-
 }
 
+// Object User
+@ObjectType()
+class UserObject{
+  @Field(() => User)
+  user: User
+
+  @Field()
+  token: string
+}
+
+// JWT
+const secret = process.env.TOKEN_SECRET!
+import jwt from 'jsonwebtoken'
 
 @Resolver()
 export class UserResolver{
@@ -32,17 +45,28 @@ export class UserResolver{
     return users
   }
 
-  @Query(() => User)
-  async getUserById(
-    @Arg("id", () => Int) id : number
-  ){
-    const user = await User.findOne(id, {
-      relations: ["post"]
+  @Mutation(() => UserObject)
+  async login(
+    @Arg("email", () => String) email : string
+  ) : Promise<UserObject> {
+    const user = await User.findOne({
+      where: {email}
     })
+
     if(!user){
       throw new Error("User not exists")
     }
-    return user
+
+    const token = await jwt.sign({
+      userId: user.id,
+    }, secret , {
+      expiresIn: 86400
+    })
+
+    return {
+      user,
+      token
+    }
   }
   
   @Mutation(() => User)
@@ -53,7 +77,12 @@ export class UserResolver{
       await UserValidation.validate(data, {
         abortEarly: false
       })
-      const userCreated = await User.create(data).save()
+      
+      const passwordHashed = await bcrypt.hash(data.password, 10)
+      const userCreated = await User.create({
+        ...data,
+        password: passwordHashed
+      }).save()
       return userCreated
     }catch(err){
       console.log(err)

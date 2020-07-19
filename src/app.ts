@@ -4,6 +4,11 @@ import { buildSchema } from 'type-graphql'
 import { createConnection } from 'typeorm'
 import http from 'http'
 
+import dotenv from 'dotenv'
+dotenv.config({
+  path: ".env"
+})
+
 // Resolvers
 import { UserResolver } from './graphql/User/UserResolver'
 import { PostResolver } from './graphql/Post/PostResolver'
