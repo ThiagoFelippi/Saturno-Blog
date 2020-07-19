@@ -1,0 +1,41 @@
+{
+  "name": "saturno_uploads",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "scripts": {
+    "dev": "ts-node-dev src/app.ts",
+    "commit": "git-cz"
+  },
+  "dependencies": {
+    "@commitlint/cli": "^9.1.1",
+    "@commitlint/config-angular": "^9.1.1",
+    "@commitlint/config-conventional": "^9.1.1",
+    "apollo-server-express": "^2.16.0",
+    "commitizen": "^4.1.2",
+    "cz-conventional-changelog": "^3.2.0",
+    "express": "^4.17.1",
+    "graphql": "^15.3.0",
+    "http": "^0.0.1-security",
+    "husky": "^4.2.5",
+    "mysql": "^2.18.1",
+    "type-graphql": "^1.0.0-rc.3",
+    "typeorm": "^0.2.25"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.7",
+    "ts-node": "^8.10.2",
+    "ts-node-dev": "^1.0.0-pre.52",
+    "typescript": "^3.9.7"
+  }
+}
