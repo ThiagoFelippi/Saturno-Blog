@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Arg, InputType, Field, Subscription, PubSub, PubSubEngine, Root, ObjectType, Int } from "type-graphql";
+import { Resolver, Query, Mutation, Arg, InputType, Field, Subscription, PubSub, PubSubEngine, Root, ObjectType, Int, UseMiddleware, Ctx } from "type-graphql";
 
 // Entitys
 import { Post } from '../../entity/Post';
@@ -6,6 +6,10 @@ import { User } from './../../entity/User';
 
 // Validation
 import PostValidation from './utils/validate'
+
+// Middlewares
+import { isAuth } from './../middlewares/isAuth';
+import { MyContext } from './../../context/MyContext';
 
 // Input Post
 @InputType()
@@ -22,18 +26,6 @@ class PostInput{
 
 }
 
-// PubSub inputs & types
-@InputType()
-class PubSubInput{
-  
-  @Field()
-  title : string
-
-  @Field()
-  content : string
-  
-}
-
 @ObjectType()
 class PubSubType{
     
@@ -42,34 +34,46 @@ class PubSubType{
 
   @Field()
   content : string
+
+  @Field(() => User, {nullable: true})
+  user: User
 }
 
 @Resolver()
 export class PostResolver{
 
   @Query(() => [Post])
+  @UseMiddleware(isAuth)
   async getAllPosts(){
     const posts = await Post.find()
     return posts
   }
 
-  @Query(() => Post)
-  async getPostById(
-    @Arg("id", () => Int) id : number
+  @Query(() => [Post])
+  @UseMiddleware(isAuth)
+  async getPostByUserId(
+    @Ctx() { payload } : MyContext
   ){
-    const post = await Post.findOne(id, {
+    const posts = await Post.find({
+      where: {
+        user: {
+          id : payload.userId
+        }
+      },
       relations: ["user"]
     })
-    if(!post){
-      throw new Error("Post not exists")
+    if(!posts.length){
+      throw new Error("This user don't have posts")
     }
-    return post
+    return posts
   }
   
   @Mutation(() => Post)
+  @UseMiddleware(isAuth)
   async createPost(
     @Arg("data", () => PostInput) data : PostInput,
-    @PubSub() pubSub: PubSubEngine
+    @PubSub() pubSub: PubSubEngine,
+    @Ctx() { payload } : MyContext
   ){
     try{
       await PostValidation.validate(data, {
@@ -79,7 +83,7 @@ export class PostResolver{
       const postCreated = await Post.create({
         ...data,
         user: {
-          id: 2 // Fazer esse id virar dinâmico
+          id: payload.userId
         }
         
       }).save()
@@ -92,10 +96,14 @@ export class PostResolver{
   }
 
   @Mutation(() => Boolean)
+  @UseMiddleware(isAuth)
   async deletePost(
-    @Arg("id", () => Int) id : number
+    @Ctx() { payload } : MyContext
   ){
-    const removed = await Post.delete(id)
+    const removed = await Post.delete(payload.userId)
+    if(!removed){
+      throw new Error("Post not exists")
+    }
     return !!removed
   }
 
@@ -104,11 +112,12 @@ export class PostResolver{
     name: "Post"
   })
   async subPost(
-    @Root() {title, content} : Post
-  ) : Promise<PubSubInput> {
+    @Root() {title, content, user} : Post
+  ) : Promise<PostInput> {
     return {
       title,
-      content
+      content,
+      user
     }
   }
 

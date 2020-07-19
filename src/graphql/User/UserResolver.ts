@@ -83,6 +83,7 @@ export class UserResolver{
         ...data,
         password: passwordHashed
       }).save()
+      
       return userCreated
     }catch(err){
       console.log(err)

@@ -23,7 +23,8 @@ import { PostResolver } from './graphql/Post/PostResolver'
         UserResolver,
         PostResolver
       ]
-    })
+    }),
+    context: ({req, res}) => ({req,res})
   })
 
   apolloServer.applyMiddleware({app})
