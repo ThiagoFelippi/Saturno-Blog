@@ -19,36 +19,16 @@ class UserInput{
   @Field()
   password : string
 
+
 }
 
-// // PubSub inputs & types
-// @InputType()
-// class PubSubInput{
-  
-//   @Field()
-//   name : string
-
-//   @Field()
-//   email : string
-  
-// }
-
-// @ObjectType()
-// class PubSubType{
-    
-//   @Field()
-//   name : string
-
-//   @Field()
-//   email : string
-// }
 
 @Resolver()
 export class UserResolver{
 
   @Query(() => [User])
   async getAllUsers(){
-    const users = await User.find()
+    const users = await User.find({relations: ["post"]})
     return users
   }
 
@@ -56,7 +36,9 @@ export class UserResolver{
   async getUserById(
     @Arg("id", () => Int) id : number
   ){
-    const user = await User.findOne(id)
+    const user = await User.findOne(id, {
+      relations: ["post"]
+    })
     if(!user){
       throw new Error("User not exists")
     }
@@ -65,15 +47,13 @@ export class UserResolver{
   
   @Mutation(() => User)
   async createUser(
-    @Arg("data", () => UserInput) data : UserInput,
-    // @PubSub() pubSub: PubSubEngine
+    @Arg("data", () => UserInput) data : UserInput
   ){
     try{
       await UserValidation.validate(data, {
         abortEarly: false
       })
       const userCreated = await User.create(data).save()
-      // await pubSub.publish("User", userCreated)
       return userCreated
     }catch(err){
       console.log(err)
@@ -89,18 +69,5 @@ export class UserResolver{
     const removed = await User.delete(id)
     return !!removed
   }
-
-  // @Subscription(() => PubSubType, {
-  //   topics: "User",
-  //   name: "User"
-  // })
-  // async subUser(
-  //   @Root() {name, email} : User
-  // ) : Promise<PubSubInput> {
-  //   return {
-  //     name,
-  //     email
-  //   }
-  // }
 
 }

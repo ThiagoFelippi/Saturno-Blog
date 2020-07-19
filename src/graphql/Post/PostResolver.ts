@@ -2,6 +2,7 @@ import { Resolver, Query, Mutation, Arg, InputType, Field, Subscription, PubSub,
 
 // Entitys
 import { Post } from '../../entity/Post';
+import { User } from './../../entity/User';
 
 // Validation
 import PostValidation from './utils/validate'
@@ -15,6 +16,9 @@ class PostInput{
 
   @Field()
   content : string
+
+  @Field(() => Int, {nullable: true})
+  user: User
 
 }
 
@@ -53,7 +57,9 @@ export class PostResolver{
   async getPostById(
     @Arg("id", () => Int) id : number
   ){
-    const post = await Post.findOne(id)
+    const post = await Post.findOne(id, {
+      relations: ["user"]
+    })
     if(!post){
       throw new Error("Post not exists")
     }
@@ -69,7 +75,14 @@ export class PostResolver{
       await PostValidation.validate(data, {
         abortEarly: false
       })
-      const postCreated = await Post.create(data).save()
+
+      const postCreated = await Post.create({
+        ...data,
+        user: {
+          id: 2 // Fazer esse id virar dinâmico
+        }
+        
+      }).save()
       await pubSub.publish("Post", postCreated)
       return postCreated
     }catch(err){
