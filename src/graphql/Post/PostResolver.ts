@@ -45,7 +45,7 @@ export class PostResolver{
   @Query(() => [Post])
   @UseMiddleware(isAuth)
   async getAllPosts(){
-    const posts = await Post.find()
+    const posts = await Post.find({relations: ["user", "likes"]})
     return posts
   }
 
@@ -60,7 +60,7 @@ export class PostResolver{
           id : payload.userId
         }
       },
-      relations: ["user"]
+      relations: ["user", "likes"]
     })
     if(!posts.length){
       throw new Error("This user don't have posts")

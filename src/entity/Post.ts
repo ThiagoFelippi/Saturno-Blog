@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, ManyToOne, JoinColumn } from 'typeorm'
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, ManyToOne, JoinColumn, ManyToMany } from 'typeorm'
 import { ObjectType, Field, Int } from 'type-graphql'
 import { Min } from 'class-validator'
 import { User } from './User';
@@ -26,5 +26,11 @@ export class Post extends BaseEntity{
   @ManyToOne(type => User, user => user.post)
   @JoinColumn()
   user: User
+
+  @Field(() => [User], {
+    nullable: true
+  })
+  @ManyToMany(type => User, likes => likes.likes)
+  likes: User[]
 
 }
